@@ -4,38 +4,68 @@ module.exports = function(app, passport, db) {
 
     // show the home page (will also have our login links)
     app.get('/', function(req, res) {
-        res.render('index.ejs');
+      db.collection('job board')
+      .find().toArray((err, result) => {
+        if (err) return console.log(err)
+        //if the user already has any posts created
+        if(result.length){
+          console.log('made it');
+          res.render('index.ejs', {
+            user : req.user,
+            job : result
+          })
+        }
+        else {
+          const job = [ { company:0 } ]
+          res.render('index.ejs', {
+            user : req.user,
+            job : job
+          })
+        }
+      })
     });
 
     // PROFILE SECTION =========================
     app.get('/profile', isLoggedIn, function(req, res) {
-        // db.collection('messages').find().toArray((err, result) => {
-        //   if (err) return console.log(err)
           res.render('profile.ejs', {
             user : req.user
           })
-        // })
     });
 
 
     // creates post SECTION
     app.get('/myposts', isLoggedIn, function(req, res) {
-        db.collection('messages').find().toArray((err, result) => {
-          if (err) return console.log(err)
+      db.collection('job board')
+      .find( { user : req.user.local.email } ).toArray((err, result) => {
+        if (err) return console.log(err)
+
+        console.log(result);
+        console.log(result.length);
+        console.log(result[0].company);
+        //if the user already has any posts created
+        if(result.length){
+          console.log('made it');
           res.render('myposts.ejs', {
-            user : req.user
+            user : req.user,
+            job : result
           })
-        })
+        }
+        else {
+          const job = [ { company:0 } ]
+          res.render('myposts.ejs', {
+            user : req.user,
+            job : job
+          })
+        }
+
+      })
     });
 
     app.get('/createpost', isLoggedIn, function(req, res) {
-          res.render('createposts.ejs', {
+          res.render('createPost.ejs', {
             user : req.user
           })
     });
-
-
-
 
     // LOGOUT ==============================
     app.get('/logout', function(req, res) {
@@ -43,48 +73,19 @@ module.exports = function(app, passport, db) {
         res.redirect('/');
     });
 
-// message board routes ===============================================================
-
-    app.post('/messages', (req, res) => {
-      db.collection('messages').save({name: req.body.name, msg: req.body.msg, thumbUp: 0, thumbDown:0}, (err, result) => {
+    app.post('/createpost', (req, res) => {
+      // console.log(req.body);
+      db.collection('job board')
+      .save({user: req.user.local.email, company: req.body.company, description: req.body.description, location: req.body.location, urgent:req.body.urgent, title: req.body.title}, (err, result) => {
         if (err) return console.log(err)
         console.log('saved to database')
-        res.redirect('/profile')
+        res.json({fetch : 'saved to db'})
       })
     })
 
-    app.put('/messages', (req, res) => {
-      db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-        $set: {
-          thumbUp:req.body.thumbUp + 1
-        }
-      }, {
-        sort: {_id: -1},
-        upsert: true
-      }, (err, result) => {
-        if (err) return res.send(err)
-        res.send(result)
-      })
-    })
 
-    app.put('/messagesDown', (req, res) => {
-      db.collection('messages')
-      .findOneAndUpdate({name: req.body.name, msg: req.body.msg}, {
-        $set: {
-          thumbUp:req.body.thumbUp - 1
-        }
-      }, {
-        sort: {_id: -1},
-        upsert: true
-      }, (err, result) => {
-        if (err) return res.send(err)
-        res.send(result)
-      })
-    })
-
-    app.delete('/messages', (req, res) => {
-      db.collection('messages').findOneAndDelete({name: req.body.name, msg: req.body.msg}, (err, result) => {
+    app.delete('/deletepost', (req, res) => {
+      db.collection('job board').findOneAndDelete({user: req.user.local.email, company: req.body.company, description: req.body.description, location: req.body.location, urgent:req.body.urgent, title: req.body.title}, (err, result) => {
         if (err) return res.send(500, err)
         res.send('Message deleted!')
       })
@@ -137,7 +138,6 @@ module.exports = function(app, passport, db) {
             res.redirect('/profile');
         });
     });
-
 };
 
 // route middleware to ensure user is logged in

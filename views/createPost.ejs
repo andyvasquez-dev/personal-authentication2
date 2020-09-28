@@ -6,23 +6,30 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="body">
 
   <header>
     <h1>Job Board</h1>
   </header>
 
-  <section>
+  <section class="form">
     <input type="text" name="" value="" class="company" placeholder="Company for Employment">
     <input type="text" name="" value="" class="title" placeholder="Job Title">
     <input type="message" name="" value="" class="details" placeholder="Job Description">
     <input type="text" name="" value="" class="location" placeholder="Location">
     <section class="check">
       <label for="name">Urgently Hiring? </label>
-      <input type="checkbox" name="urgent" value="" class="urgent">
+      <select class="urgent" name="urgent">
+        <option value=""></option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
     </section>
     <button type="button" name="button" class="submit">Submit</button>
   </section>
 
+  <script type="text/javascript" src="main.js">
+
+  </script>
 </body>
 </html>
